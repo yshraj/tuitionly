@@ -1,0 +1,211 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ══════════════════════════════════════════════════
+   shadcn/ui Design System — Zinc (Black & White)
+   ══════════════════════════════════════════════════ */
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 5.9% 10%;
+    --radius: 0.625rem;
+    --chart-1: 217 91% 60%;
+    --chart-2: 160 84% 39%;
+    --chart-3: 250 60% 68%;
+    --chart-4: 38 92% 50%;
+    --chart-5: 349 77% 62%;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+    --chart-1: 217 80% 62%;
+    --chart-2: 160 70% 45%;
+    --chart-3: 250 55% 72%;
+    --chart-4: 38 85% 55%;
+    --chart-5: 349 70% 65%;
+
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* ══════════════════════════════════════════════════
+   Legacy CSS — Landing Page (nicht migriert)
+   Diese Klassen werden NUR von app/page.tsx verwendet.
+   NICHT löschen bis Landing Page migriert ist.
+   ══════════════════════════════════════════════════ */
+
+:root {
+  --bg: var(--legacy-bg);
+  --purple: #5235ef;
+  --purple-light: #6b52f5;
+  --purple-dim: rgba(82, 53, 239, 0.12);
+  --dark: #101011;
+  --dark-2: #2b2b2c;
+  --mid: #606266;
+  --legacy-muted: #a7a7a7;
+  --legacy-bg: #f0f2f6;
+  --bg-card: #ffffff;
+  --legacy-border: #e4e6ec;
+  --border-dark: #d0d3de;
+  --success: #16a34a;
+  --success-bg: #dcfce7;
+  --warning: #d97706;
+  --warning-bg: #fef3c7;
+  --error: #dc2626;
+  --error-bg: #fee2e2;
+  --legacy-radius: 12px;
+  --radius-sm: 8px;
+  --radius-lg: 16px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.06);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.10);
+}
+
+/* Legacy page enter animation */
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.page-enter {
+  animation: pageIn 0.22s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* Legacy Buttons (Landing Page) */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  transition: background 0.18s cubic-bezier(0.4,0,0.2,1),
+              color 0.18s cubic-bezier(0.4,0,0.2,1),
+              transform 0.14s cubic-bezier(0.4,0,0.2,1),
+              box-shadow 0.18s cubic-bezier(0.4,0,0.2,1),
+              border-color 0.18s cubic-bezier(0.4,0,0.2,1);
+  white-space: nowrap;
+}
+.btn:active { transform: scale(0.97) !important; }
+.btn-primary { background: var(--purple); color: #fff; }
+.btn-primary:hover { background: var(--purple-light); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(82,53,239,0.35); }
+.btn-primary:active { background: #4328d4; }
+.btn-secondary {
+  background: var(--bg-card);
+  color: var(--dark);
+  border: 1.5px solid var(--border-dark);
+}
+.btn-secondary:hover { border-color: var(--purple); color: var(--purple); background: var(--purple-dim); }
+.btn-ghost { background: transparent; color: var(--mid); padding: 10px 16px; }
+.btn-ghost:hover { color: var(--dark); background: var(--legacy-border); }
+.btn-sm { padding: 8px 16px; font-size: 13px; }
+.btn-lg { padding: 16px 32px; font-size: 16px; }
+.btn:disabled { opacity: 0.5; pointer-events: none; }
+
+/* Legacy Badges (Landing Page) */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 500;
+}
+.badge-purple  { background: var(--purple-dim);  color: var(--purple);  }
+.badge-success { background: var(--success-bg);  color: var(--success); }
+.badge-warning { background: var(--warning-bg);  color: var(--warning); }
+.badge-error   { background: var(--error-bg);    color: var(--error);   }
+.badge-gray    { background: var(--legacy-border); color: var(--mid);   }
+
+/* Legacy Card (Landing Page) */
+.card {
+  background: var(--bg-card);
+  border: 1.5px solid var(--legacy-border);
+  border-radius: var(--legacy-radius);
+  padding: 24px;
+  transition: box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+/* Legacy Input (Landing Page) */
+.input-wrap { display: flex; flex-direction: column; gap: 6px; }
+.input-label { font-size: 14px; font-weight: 500; color: var(--dark-2); }
+.input {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--legacy-bg);
+  border: 1.5px solid var(--legacy-border);
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  color: var(--dark);
+  outline: none;
+  transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
+}
+.input:focus { border-color: var(--purple); box-shadow: 0 0 0 3px var(--purple-dim); background: #fff; }
+.input::placeholder { color: var(--legacy-muted); }
+.input-hint { font-size: 12px; color: var(--legacy-muted); }
+
+/* Legacy Container (Landing Page) */
+.container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 24px; }
