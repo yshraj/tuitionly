@@ -59,7 +59,7 @@ Right now they use:
 **Progressive Web App (PWA)** — works on any phone browser, add to home screen, feels like an app. No Play Store. No App Store. Ship fast, update instantly.
 
 ### Tech Stack (MVP)
-- **App:** Next.js 15 (App Router) in this repo — aligned with internal reference micro-SaaS patterns (see `DESIGN_REFERENCE.md`).
+- **App:** **Next.js 15 (App Router)** in this repo — aligned with internal reference micro-SaaS patterns (see `DESIGN_REFERENCE.md` and root **`README.md`**). *(The “Vite vs Next” table further down is historical options discussion; shipping code is Next.js.)*
 - **UI:** React + Tailwind CSS (PWA-capable)
 - **Data + auth:** Supabase (PostgreSQL + Row Level Security + Phone OTP via Twilio in dashboard)
 - **Optional first backend:** None required until you need server-only work (e.g. Razorpay webhooks, trusted PDF generation). Until then, the browser + Supabase client + RLS is enough.
@@ -85,7 +85,7 @@ Right now they use:
 Done in this repo before feature UI:
 
 - **Supabase:** dedicated Tuitionly project; Phone provider + Twilio; `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` in `.env`.
-- **Schema (SQL):** `profiles`, `students`, `fee_payments`; RLS on all three; trigger `on_auth_user_created` → inserts `profiles` row for new `auth.users`.
+- **Schema (SQL):** `profiles`, `students`, `fee_payments`; RLS on all three; trigger `on_auth_user_created` → inserts `profiles` row for new `auth.users`. **`scripts/schema.sql`** is the source of truth and includes idempotent `ALTER … ADD COLUMN IF NOT EXISTS` for fields added after first deploy (CRM columns, `fee_period_months`, `billing_mode`, `parent_update_note`, etc.).
 - **Scripts:** `npm run check:otp -- +91XXXXXXXXXX` (send + verify OTP); `npm run setup:db` (apply `scripts/schema.sql`). See `.env.example`.
 - **Windows / DNS:** For `setup:db`, use the **Session pooler** Postgres URI from the Supabase dashboard (IPv4-friendly). The direct host `db.<project>.supabase.co` is often **IPv6-only** and can throw `ENOTFOUND` on some Windows networks.
 
@@ -101,16 +101,19 @@ Done in this repo before feature UI:
 - Login form validates **Indian mobile** client-side (normalized `+91` E.164, ten digits after country code, first digit 6–9) before `signInWithOtp`; placeholder avoids looking like a real subscriber number
 
 #### 2. Student Management
-- Add student: name, phone number, parent phone, monthly fee amount, join date
-- View all students in a clean list
-- Mark student as active / inactive
+- Add / edit student: name, **parent phone (required, validated Indian mobile, stored +91…)**, optional student phone, **fee per billing period** with cadence **monthly / 6-month / yearly** from join date, join date, active toggle
+- Optional CRM: parent name, school, class/level, subjects, **private notes** (tutor only)
+- Optional **`parent_update_note`**: short message for parents, **appended to WhatsApp fee reminders** when set (soft UI; not blocking)
+- **Prepaid vs postpaid** flag (wording on reminders; same per-period fee math)
+- View all students in a clean list (optional sticky-note hint when a parent update is set)
+- **Delete student** (with confirm; removes linked `fee_payments` via DB cascade)
 
 #### 3. Fee Tracking
-- Mark fee as paid for current month — one tap
+- Mark fee as paid for **current billing period** — one tap (period length = 1, 6, or 12 months from join date)
 - Add partial payment with balance shown
 - View full payment history per student
-- Monthly cycle starts from student's join date (not calendar month)
-- Prepaid and postpaid fee type support
+- **Billing window** anchored to join date (not rigid calendar month)
+- **Prepaid / postpaid** messaging on WhatsApp; amount is always “per period” for that student’s cadence
 
 #### 4. Dashboard
 - Total collected this month
@@ -119,8 +122,8 @@ Done in this repo before feature UI:
 - Quick "pending students" list front and center
 
 #### 5. WhatsApp Reminder
-- One tap per student → opens WhatsApp with pre-filled message
-- Message: *"Namaste [Parent Name], [Student Name] ki [Month] fees ₹[Amount] pending hai. Please pay karo. — [Tutor Name]"*
+- One tap per student → opens WhatsApp with pre-filled message (Hinglish-style; period label reflects join-based window)
+- Includes optional hints for **prepaid** and **6- / 12-month** cadence; optional **`parent_update_note`** line when set
 - Tutor can edit message before sending
 - No WhatsApp API — just wa.me deep link. Zero cost.
 
@@ -133,7 +136,7 @@ Done in this repo before feature UI:
 - Starter ₹99/month: up to 20 students
 - Pro ₹199/month: up to 100 students
 - Yearly plans: ₹799/year (Starter), ₹1599/year (Pro)
-- Razorpay subscription integration
+- **Razorpay subscription integration** — planned; seat limits exist in DB/UI but checkout is not enabled in this build
 
 ### Skip in V1
 - ❌ Attendance tracking
@@ -254,7 +257,7 @@ Done in this repo before feature UI:
 
 ## ✅ Validation (ongoing)
 
-- **Technical:** Phone OTP (Supabase + Twilio) and database schema applied in dev — validated.
+- **Technical:** Phone OTP (Supabase + Twilio) and database schema applied in dev — validated. App ships with **Next.js 15**, route **loading** states, **delete student**, **semester/yearly periods**, **required parent phone**, optional **parent WhatsApp update** text, and **`README.md`** for contributors.
 - **Product:** Still run the tutor interviews — show a Figma or working PWA, ask *"Would you pay ₹99/month for this?"* Target 3/5 yes before heavy feature build beyond MVP.
 
 ---
