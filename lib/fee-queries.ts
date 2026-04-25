@@ -1,17 +1,29 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { getBillingPeriodContaining, feeStatus, type BillingPeriod } from '@/lib/billing'
+import type { BillingIntervalMonths } from '@/lib/fee-period'
+import { normalizeBillingInterval } from '@/lib/fee-period'
 
 export type StudentRow = {
   id: string
   name: string
   parent_name: string | null
   parent_phone: string | null
+  student_phone: string | null
+  school_name: string | null
+  subjects: string | null
+  grade_level: string | null
+  grade_detail: string | null
+  notes: string | null
+  parent_update_note: string | null
+  billing_mode: string | null
+  fee_period_months: number | null
   monthly_fee: string | number
   join_date: string
   is_active: boolean
 }
 
 export type StudentWithPeriod = StudentRow & {
+  feePeriodMonths: BillingIntervalMonths
   period: BillingPeriod
   paidThisPeriod: number
   feeState: ReturnType<typeof feeStatus>
@@ -27,7 +39,9 @@ export async function loadStudentsWithFeeStatus(
 
   let q = supabase
     .from('students')
-    .select('id, name, parent_name, parent_phone, monthly_fee, join_date, is_active')
+    .select(
+      'id, name, parent_name, parent_phone, student_phone, school_name, subjects, grade_level, grade_detail, notes, parent_update_note, billing_mode, fee_period_months, monthly_fee, join_date, is_active'
+    )
     .eq('user_id', userId)
     .order('name', { ascending: true })
 
@@ -44,12 +58,14 @@ export async function loadStudentsWithFeeStatus(
   const payList = payments ?? []
 
   return students.map(s => {
-    const period = getBillingPeriodContaining(s.join_date, asOf)
+    const feePeriodMonths = normalizeBillingInterval(s.fee_period_months)
+    const period = getBillingPeriodContaining(s.join_date, asOf, feePeriodMonths)
     const paidThisPeriod = payList
       .filter(p => p.student_id === s.id && p.billing_month === period.periodStartStr)
       .reduce((sum, p) => sum + Number(p.amount), 0)
     return {
       ...s,
+      feePeriodMonths,
       period,
       paidThisPeriod,
       feeState: feeStatus(Number(s.monthly_fee), paidThisPeriod),

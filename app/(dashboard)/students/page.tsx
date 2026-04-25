@@ -1,6 +1,9 @@
 import Link from 'next/link'
+import { StickyNote } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { loadStudentsWithFeeStatus } from '@/lib/fee-queries'
+import { FEE_PERIOD_OPTIONS } from '@/lib/fee-period'
+import { labelForGradeLevel } from '@/lib/student-fields'
 
 export default async function StudentsPage({ searchParams }: { searchParams: Promise<{ all?: string }> }) {
   const { all } = await searchParams
@@ -19,7 +22,7 @@ export default async function StudentsPage({ searchParams }: { searchParams: Pro
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-zinc-950">Students</h1>
           <p className="text-sm text-zinc-500">
-            Fee status uses each student&apos;s <strong>join-date billing cycle</strong>.
+            Fee status uses each student&apos;s <strong>join date</strong> and <strong>fee period</strong> (monthly, semester, or yearly).
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -55,7 +58,7 @@ export default async function StudentsPage({ searchParams }: { searchParams: Pro
             <thead className="border-b border-zinc-200 bg-zinc-50 text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
               <tr>
                 <th className="px-4 py-3">Name</th>
-                <th className="px-4 py-3">Fee / mo</th>
+                <th className="px-4 py-3">Cycle fee</th>
                 <th className="px-4 py-3">This cycle</th>
                 <th className="px-4 py-3">Paid</th>
                 <th className="px-4 py-3">Due</th>
@@ -64,15 +67,35 @@ export default async function StudentsPage({ searchParams }: { searchParams: Pro
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100 bg-white">
-              {rows.map(s => (
+              {rows.map(s => {
+                const sub = [labelForGradeLevel(s.grade_level, s.grade_detail), s.school_name?.trim()]
+                  .filter(Boolean)
+                  .join(' · ')
+                return (
                 <tr key={s.id}>
                   <td className="px-4 py-3">
-                    <Link href={`/students/${s.id}`} className="font-medium text-zinc-950 hover:underline">
-                      {s.name}
-                    </Link>
+                    <span className="inline-flex items-center gap-1.5">
+                      <Link href={`/students/${s.id}`} className="font-medium text-zinc-950 hover:underline">
+                        {s.name}
+                      </Link>
+                      {s.parent_update_note?.trim() ? (
+                        <StickyNote
+                          className="h-3.5 w-3.5 shrink-0 text-amber-600"
+                          aria-label="Optional parent update is set for WhatsApp reminders"
+                        />
+                      ) : null}
+                    </span>
                     {!s.is_active && <span className="ml-2 text-xs text-zinc-400">(inactive)</span>}
+                    {sub ? <span className="mt-0.5 block max-w-[220px] truncate text-xs font-normal text-zinc-500">{sub}</span> : null}
                   </td>
-                  <td className="px-4 py-3 tabular-nums text-zinc-700">₹{Number(s.monthly_fee).toLocaleString('en-IN')}</td>
+                  <td className="px-4 py-3 tabular-nums text-zinc-700">
+                    ₹{Number(s.monthly_fee).toLocaleString('en-IN')}
+                    {s.feePeriodMonths !== 1 ? (
+                      <span className="mt-0.5 block text-[11px] font-normal text-zinc-400">
+                        {FEE_PERIOD_OPTIONS.find(o => o.value === s.feePeriodMonths)?.short ?? ''}
+                      </span>
+                    ) : null}
+                  </td>
                   <td className="px-4 py-3 text-xs text-zinc-600">{s.period.label}</td>
                   <td className="px-4 py-3 tabular-nums text-zinc-700">₹{s.paidThisPeriod.toLocaleString('en-IN')}</td>
                   <td className="px-4 py-3 tabular-nums text-amber-800">₹{s.feeState.remaining.toLocaleString('en-IN')}</td>
@@ -95,7 +118,8 @@ export default async function StudentsPage({ searchParams }: { searchParams: Pro
                     </Link>
                   </td>
                 </tr>
-              ))}
+                )
+              })}
             </tbody>
           </table>
         </div>

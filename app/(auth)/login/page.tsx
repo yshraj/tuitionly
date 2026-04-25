@@ -6,19 +6,7 @@ import Link from 'next/link'
 import { Loader2 } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { createClient } from '@/lib/supabase/client'
-
-function toE164(raw: string): string {
-  const digits = raw.replace(/\D/g, '')
-  if (digits.length === 10) return `+91${digits}`
-  if (digits.startsWith('91') && digits.length === 12) return `+${digits}`
-  if (raw.trim().startsWith('+')) return `+${digits}`
-  return `+${digits}`
-}
-
-/** Indian mobile in E.164 after {@link toE164}: +91 and 10 digits, first digit 6–9. */
-function isValidInE164(e164: string): boolean {
-  return /^\+91[6-9]\d{9}$/.test(e164)
-}
+import { isValidIndiaMobile, toIndiaMobileE164 } from '@/lib/india-phone'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -34,8 +22,8 @@ export default function LoginPage() {
     e.preventDefault()
     setError('')
     setLoading(true)
-    const e164 = toE164(phoneInput)
-    if (!isValidInE164(e164)) {
+    const e164 = toIndiaMobileE164(phoneInput)
+    if (!isValidIndiaMobile(phoneInput)) {
       setError('Enter a valid 10-digit Indian mobile number (starts with 6–9).')
       setLoading(false)
       return
@@ -57,38 +45,51 @@ export default function LoginPage() {
     e.preventDefault()
     setError('')
     setLoading(true)
-    const { data, error: vErr } = await supabase.auth.verifyOtp({
-      phone: phoneE164,
-      token: otp.trim(),
-      type: 'sms',
-    })
-    setLoading(false)
-    if (vErr || !data.session || !data.user) {
-      setError(vErr?.message ?? 'Invalid code')
-      return
+    try {
+      const { data, error: vErr } = await supabase.auth.verifyOtp({
+        phone: phoneE164,
+        token: otp.trim(),
+        type: 'sms',
+      })
+      if (vErr || !data.session || !data.user) {
+        setError(vErr?.message ?? 'Invalid code')
+        setLoading(false)
+        return
+      }
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('onboarding_completed')
+        .eq('id', data.user.id)
+        .maybeSingle()
+      const dest = profile?.onboarding_completed ? '/dashboard' : '/onboarding'
+      // Stay in loading state until navigation replaces this screen (avoids Continue → flash).
+      router.replace(dest)
+      router.refresh()
+    } catch {
+      setError('Something went wrong. Try again.')
+      setLoading(false)
     }
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('onboarding_completed')
-      .eq('id', data.user.id)
-      .maybeSingle()
-    router.push(profile?.onboarding_completed ? '/dashboard' : '/onboarding')
-    router.refresh()
   }
 
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
-      <div className="relative hidden lg:flex items-end bg-zinc-950 p-14 overflow-hidden">
-        <div className="pointer-events-none absolute -right-20 -top-20 select-none text-[400px] font-black leading-none text-white/[0.03] tracking-tighter">
-          T
+      <div className="relative hidden min-h-svh flex-col justify-end bg-zinc-950 p-12 lg:flex lg:p-14">
+        <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
+          <div className="absolute -right-16 -top-16 select-none text-[min(52vw,380px)] font-black leading-none text-white/[0.04] tracking-tighter sm:text-[380px]">
+            T
+          </div>
         </div>
-        <div className="relative space-y-8">
+        <div className="relative z-10 space-y-8">
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-zinc-950 text-xl font-bold">
             T
           </div>
-          <div>
-            <h1 className="text-7xl font-bold tracking-tighter text-white leading-[0.9]">Tuitionly</h1>
-            <p className="text-7xl font-extralight tracking-tighter text-zinc-500 leading-[0.9]">fees</p>
+          <div className="min-w-0">
+            <h1 className="text-5xl font-bold tracking-tighter text-white leading-[0.92] sm:text-6xl xl:text-7xl">
+              Tuitionly
+            </h1>
+            <p className="text-5xl font-extralight tracking-tighter text-zinc-500 leading-[0.92] sm:text-6xl xl:text-7xl">
+              fees
+            </p>
           </div>
           <div className="h-px w-16 bg-zinc-800" />
           <p className="text-[15px] leading-relaxed text-zinc-500 max-w-xs">
@@ -140,7 +141,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex h-11 w-full items-center justify-center rounded-lg bg-zinc-950 text-[15px] font-medium text-white hover:bg-zinc-800 active:bg-zinc-900 disabled:opacity-50 transition-colors"
+                className="flex h-11 w-full items-center justify-center rounded-lg bg-zinc-950 text-[15px] font-medium text-white transition-colors hover:bg-zinc-800 active:bg-zinc-900 disabled:cursor-wait disabled:opacity-100"
               >
                 {loading ? (
                   <>
@@ -180,7 +181,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex h-11 w-full items-center justify-center rounded-lg bg-zinc-950 text-[15px] font-medium text-white hover:bg-zinc-800 disabled:opacity-50 transition-colors"
+                className="flex h-11 w-full items-center justify-center rounded-lg bg-zinc-950 text-[15px] font-medium text-white transition-colors hover:bg-zinc-800 disabled:cursor-wait disabled:opacity-100"
               >
                 {loading ? (
                   <>

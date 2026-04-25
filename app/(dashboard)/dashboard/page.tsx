@@ -33,7 +33,9 @@ export default async function DashboardPage() {
     <div className="mx-auto max-w-3xl space-y-8">
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-zinc-950">Dashboard</h1>
-        <p className="mt-1 text-sm text-zinc-500">This cycle (per student, from join date).</p>
+        <p className="mt-1 text-sm text-zinc-500">
+          Each student&apos;s current billing window (monthly, 6-month, or yearly — from their join date).
+        </p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -61,7 +63,7 @@ export default async function DashboardPage() {
         <div className="rounded-xl border border-emerald-200 bg-emerald-50/40 p-5">
           <p className="text-[13px] font-medium uppercase tracking-wide text-emerald-800">Collected (this cycle)</p>
           <p className="mt-2 text-2xl font-bold tabular-nums text-emerald-950">₹{stats.collected.toLocaleString('en-IN')}</p>
-          <p className="mt-1 text-xs text-emerald-800/80">Capped at monthly fee per active student.</p>
+          <p className="mt-1 text-xs text-emerald-800/80">Capped at each active student&apos;s fee for their current period.</p>
         </div>
         <div className="rounded-xl border border-amber-200 bg-amber-50/40 p-5">
           <p className="text-[13px] font-medium uppercase tracking-wide text-amber-900">Still due (this cycle)</p>
@@ -105,6 +107,9 @@ export default async function DashboardPage() {
                 <div>
                   <p className="font-medium text-zinc-950">{r.name}</p>
                   <p className="text-xs text-zinc-500">{r.period.label}</p>
+                  {r.parent_update_note?.trim() ? (
+                    <p className="mt-0.5 text-[11px] text-amber-800/90">Optional parent update will go with WhatsApp reminder</p>
+                  ) : null}
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-sm tabular-nums text-amber-800">

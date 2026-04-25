@@ -21,16 +21,65 @@ CREATE TABLE IF NOT EXISTS public.students (
   name TEXT NOT NULL,
   parent_name TEXT,
   parent_phone TEXT,
+  student_phone TEXT,
+  school_name TEXT,
+  subjects TEXT,
+  grade_level TEXT,
+  grade_detail TEXT,
+  notes TEXT,
+  parent_update_note TEXT,
+  billing_mode TEXT NOT NULL DEFAULT 'postpaid',
+  fee_period_months INT NOT NULL DEFAULT 1,
   monthly_fee NUMERIC(10, 2) NOT NULL DEFAULT 0,
   join_date DATE NOT NULL DEFAULT CURRENT_DATE,
   is_active BOOLEAN NOT NULL DEFAULT TRUE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CONSTRAINT students_billing_mode_check CHECK (billing_mode IN ('postpaid', 'prepaid')),
+  CONSTRAINT students_fee_period_months_check CHECK (fee_period_months IN (1, 6, 12))
 );
 -- STATEMENT END
 
 -- STATEMENT START:students_idx
 CREATE INDEX IF NOT EXISTS students_user_id_idx ON public.students (user_id);
+-- STATEMENT END
+
+-- STATEMENT START:students_add_crm_cols
+ALTER TABLE public.students ADD COLUMN IF NOT EXISTS student_phone TEXT;
+-- STATEMENT END
+-- STATEMENT START:students_add_school
+ALTER TABLE public.students ADD COLUMN IF NOT EXISTS school_name TEXT;
+-- STATEMENT END
+-- STATEMENT START:students_add_subjects
+ALTER TABLE public.students ADD COLUMN IF NOT EXISTS subjects TEXT;
+-- STATEMENT END
+-- STATEMENT START:students_add_grade_level
+ALTER TABLE public.students ADD COLUMN IF NOT EXISTS grade_level TEXT;
+-- STATEMENT END
+-- STATEMENT START:students_add_grade_detail
+ALTER TABLE public.students ADD COLUMN IF NOT EXISTS grade_detail TEXT;
+-- STATEMENT END
+-- STATEMENT START:students_add_notes
+ALTER TABLE public.students ADD COLUMN IF NOT EXISTS notes TEXT;
+-- STATEMENT END
+-- STATEMENT START:students_add_parent_update_note
+ALTER TABLE public.students ADD COLUMN IF NOT EXISTS parent_update_note TEXT;
+-- STATEMENT END
+-- STATEMENT START:students_add_billing_mode
+ALTER TABLE public.students ADD COLUMN IF NOT EXISTS billing_mode TEXT NOT NULL DEFAULT 'postpaid';
+-- STATEMENT END
+
+-- STATEMENT START:students_billing_mode_constraint
+ALTER TABLE public.students DROP CONSTRAINT IF EXISTS students_billing_mode_check;
+ALTER TABLE public.students ADD CONSTRAINT students_billing_mode_check CHECK (billing_mode IN ('postpaid', 'prepaid'));
+-- STATEMENT END
+
+-- STATEMENT START:students_add_fee_period_months
+ALTER TABLE public.students ADD COLUMN IF NOT EXISTS fee_period_months INT NOT NULL DEFAULT 1;
+-- STATEMENT END
+-- STATEMENT START:students_fee_period_months_constraint
+ALTER TABLE public.students DROP CONSTRAINT IF EXISTS students_fee_period_months_check;
+ALTER TABLE public.students ADD CONSTRAINT students_fee_period_months_check CHECK (fee_period_months IN (1, 6, 12));
 -- STATEMENT END
 
 -- STATEMENT START:fee_payments

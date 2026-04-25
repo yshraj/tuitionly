@@ -7,7 +7,9 @@ export default function Home() {
       <header className={styles.header}>
         <nav className={`container ${styles.nav}`}>
           <div className={styles.logo}>
-            <span className={styles.logoMark} />
+            <span className={styles.logoMark} aria-hidden>
+              T
+            </span>
             Tuitionly
           </div>
           <div className={styles.navLinks}>
@@ -59,7 +61,9 @@ export default function Home() {
         <div className={`container ${styles.heroPreview}`}>
           <div className={styles.mockDashboard}>
             <div className={styles.mockSidebar}>
-              <div className={styles.mockLogo} />
+              <div className={styles.mockLogo} aria-hidden>
+                T
+              </div>
               {['Dashboard', 'Students', 'Fees', 'Settings'].map(item => (
                 <div key={item} className={`${styles.mockNavItem} ${item === 'Students' ? styles.mockNavActive : ''}`}>
                   {item}
@@ -155,7 +159,9 @@ export default function Home() {
       <footer className={styles.footer}>
         <div className={`container ${styles.footerInner}`}>
           <div className={styles.footerLogo}>
-            <span className={styles.logoMark} />
+            <span className={styles.logoMark} aria-hidden>
+              T
+            </span>
             Tuitionly
           </div>
           <p className={styles.footerCopy}>© 2026 Tuitionly. tuitionly.in</p>

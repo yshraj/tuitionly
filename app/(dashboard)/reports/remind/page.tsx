@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { MessageCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { loadStudentsWithFeeStatus } from '@/lib/fee-queries'
+import { isBillingMode } from '@/lib/student-fields'
 import { buildFeeReminderUrl } from '@/lib/whatsapp'
 
 export default async function BulkRemindPage() {
@@ -11,11 +12,12 @@ export default async function BulkRemindPage() {
   } = await supabase.auth.getUser()
 
   const rows = await loadStudentsWithFeeStatus(supabase, user!.id, { activeOnly: true })
-  const pending = rows.filter(r => r.feeState.status !== 'paid' && r.parent_phone?.trim())
+  const phoneFor = (r: (typeof rows)[0]) => r.parent_phone?.trim() || r.student_phone?.trim() || ''
+  const pending = rows.filter(r => r.feeState.status !== 'paid' && phoneFor(r))
   const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', user!.id).single()
   const tutorName = profile?.full_name?.trim() || 'Tutor'
 
-  const noPhone = rows.filter(r => r.feeState.status !== 'paid' && !r.parent_phone?.trim())
+  const noPhone = rows.filter(r => r.feeState.status !== 'paid' && !phoneFor(r))
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
@@ -37,16 +39,21 @@ export default async function BulkRemindPage() {
       ) : (
         <ul className="space-y-2">
           {pending.map(r => {
+            const bm = isBillingMode(r.billing_mode) ? r.billing_mode : 'postpaid'
             const href = buildFeeReminderUrl({
-              parentPhone: r.parent_phone!,
+              parentPhone: phoneFor(r),
               parentName: r.parent_name,
               studentName: r.name,
               periodLabel: r.period.label,
               amountPending: r.feeState.remaining,
               tutorName,
+              billingMode: bm,
+              feePeriodMonths: r.feePeriodMonths,
+              parentUpdateNote: r.parent_update_note,
             })
+            const hasParentNote = Boolean(r.parent_update_note?.trim())
             return (
-              <li key={r.id}>
+              <li key={r.id} className="space-y-1">
                 <a
                   href={href}
                   target="_blank"
@@ -62,6 +69,11 @@ export default async function BulkRemindPage() {
                     Open
                   </span>
                 </a>
+                {hasParentNote && (
+                  <p className="px-1 text-[11px] leading-snug text-amber-800/95">
+                    Includes optional parent update — review in WhatsApp before sending.
+                  </p>
+                )}
               </li>
             )
           })}
@@ -72,7 +84,7 @@ export default async function BulkRemindPage() {
         <div className="rounded-lg border border-amber-200 bg-amber-50/50 p-4 text-sm text-amber-950">
           <p className="font-medium">Missing parent phone ({noPhone.length})</p>
           <p className="mt-1 text-xs text-amber-900/90">
-            {noPhone.map(s => s.name).join(', ')} — add a phone on the edit screen to enable reminders here.
+            {noPhone.map(s => s.name).join(', ')} — add a parent or student phone on the edit screen to enable reminders here.
           </p>
         </div>
       )}

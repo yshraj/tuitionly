@@ -27,7 +27,7 @@ export default async function DueReportPage({ searchParams }: { searchParams: Pr
           </Link>
           <h1 className="mt-2 text-2xl font-bold tracking-tight text-zinc-950">Due list</h1>
           <p className="text-sm text-zinc-500">
-            Each student&apos;s fee cycle that <strong>contains</strong> the date below (join-date based months).
+            Each student&apos;s billing window that <strong>contains</strong> the date below (from join date; monthly, 6-month, or yearly).
           </p>
         </div>
         <DuePdfButton tutorName={tutorName} rows={due} asOfLabel={asOfLabel} />

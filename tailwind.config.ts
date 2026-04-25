@@ -58,12 +58,12 @@ const config: Config = {
       },
       keyframes: {
         'page-in': {
-          from: { opacity: '0', transform: 'translateY(8px)' },
+          from: { opacity: '0', transform: 'translateY(6px)' },
           to: { opacity: '1', transform: 'translateY(0)' },
         },
       },
       animation: {
-        'page-in': 'page-in 0.22s cubic-bezier(0.4, 0, 0.2, 1) both',
+        'page-in': 'page-in 0.32s cubic-bezier(0.22, 1, 0.36, 1) both',
       },
     },
   },

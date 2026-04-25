@@ -8,6 +8,9 @@ import { buildFeeReminderUrl } from '@/lib/whatsapp'
 import { labelForPeriodStartStr } from '@/lib/billing'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import type { FeeState } from '@/lib/billing'
+import type { BillingIntervalMonths } from '@/lib/fee-period'
+import { feeCycleKindLabel } from '@/lib/fee-period'
+import type { BillingMode } from '@/lib/student-fields'
 import PaymentReceiptButton from '@/components/payment-receipt-button'
 
 type PaymentRow = {
@@ -23,6 +26,10 @@ export default function StudentDetailClient({
   studentName,
   parentName,
   parentPhone,
+  studentPhone,
+  billingMode,
+  feePeriodMonths,
+  parentUpdateNote,
   monthlyFee,
   periodLabel,
   periodStartStr,
@@ -38,6 +45,10 @@ export default function StudentDetailClient({
   studentName: string
   parentName: string | null
   parentPhone: string | null
+  studentPhone: string | null
+  billingMode: BillingMode
+  feePeriodMonths: BillingIntervalMonths
+  parentUpdateNote: string | null
   monthlyFee: number
   periodLabel: string
   periodStartStr: string
@@ -138,15 +149,19 @@ export default function StudentDetailClient({
     await refresh()
   }
 
+  const reminderPhone = parentPhone?.trim() || studentPhone?.trim() || ''
   const waUrl =
-    parentPhone && feeState.remaining > 0
+    reminderPhone && feeState.remaining > 0
       ? buildFeeReminderUrl({
-          parentPhone,
+          parentPhone: reminderPhone,
           parentName,
           studentName,
           periodLabel,
           amountPending: feeState.remaining,
           tutorName,
+          billingMode,
+          feePeriodMonths,
+          parentUpdateNote,
         })
       : null
 
@@ -177,7 +192,7 @@ export default function StudentDetailClient({
         <p className="mt-1 text-sm text-zinc-700">{periodLabel}</p>
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
           <div>
-            <p className="text-xs text-zinc-500">Monthly fee</p>
+            <p className="text-xs text-zinc-500">{feeCycleKindLabel(feePeriodMonths)}</p>
             <p className="text-lg font-semibold tabular-nums">₹{monthlyFee.toLocaleString('en-IN')}</p>
           </div>
           <div>
@@ -194,6 +209,13 @@ export default function StudentDetailClient({
           <Alert variant="destructive" className="mt-4">
             <AlertDescription>{error}</AlertDescription>
           </Alert>
+        )}
+
+        {parentUpdateNote?.trim() && feeState.remaining > 0 && (
+          <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50/90 px-3 py-2 text-xs leading-relaxed text-amber-950">
+            <span className="font-medium text-amber-900">Parent update</span> — your optional note is included in the
+            WhatsApp message below (you can still edit the text in WhatsApp before sending).
+          </p>
         )}
 
         <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
@@ -240,8 +262,10 @@ export default function StudentDetailClient({
             </a>
           )}
         </div>
-        {!parentPhone && feeState.remaining > 0 && (
-          <p className="mt-3 text-xs text-zinc-500">Add a parent phone on the edit screen to enable WhatsApp.</p>
+        {!reminderPhone && feeState.remaining > 0 && (
+          <p className="mt-3 text-xs text-zinc-500">
+            Add a parent or student phone on the edit screen to enable WhatsApp.
+          </p>
         )}
       </section>
 
@@ -253,7 +277,7 @@ export default function StudentDetailClient({
         ) : (
           <ul className="mt-3 divide-y divide-zinc-100 rounded-xl border border-zinc-200 bg-white">
             {payments.map(p => {
-              const cycleLabel = p.billing_month ? labelForPeriodStartStr(p.billing_month) : '—'
+              const cycleLabel = p.billing_month ? labelForPeriodStartStr(p.billing_month, feePeriodMonths) : '—'
               return (
                 <li key={p.id} className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
